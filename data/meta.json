@@ -1,0 +1,40 @@
+{
+  "built": "2026-09-23",
+  "counts": {
+    "jp": 218794,
+    "cn": 125094,
+    "jpKeys": 791366,
+    "cnKeys": 371640
+  },
+  "core": [
+    "tags.json",
+    "jp.txt",
+    "cn.txt",
+    "jp.idx",
+    "cn.idx",
+    "en.idx",
+    "jp2cn.txt",
+    "cn2jp.txt",
+    "jp2cn.han.txt",
+    "cn2jp.han.txt"
+  ],
+  "extra": [
+    "jp.ex.txt",
+    "cn.ex.txt"
+  ],
+  "files": {
+    "tags.json": 8098,
+    "jp.txt": 18800020,
+    "cn.txt": 9624264,
+    "jp.idx": 15693798,
+    "cn.idx": 5703700,
+    "en.idx": 13570743,
+    "jp2cn.txt": 4920364,
+    "cn2jp.txt": 3141126,
+    "jp2cn.han.txt": 554539,
+    "cn2jp.han.txt": 464692,
+    "jp.ex.txt": 3796842,
+    "cn.ex.txt": 3945819
+  },
+  "totalBytes": 80224005
+}

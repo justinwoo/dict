@@ -1,0 +1,5 @@
+# Upstream dumps; rebuild with `npm run fetch`.
+src/
+node_modules/
+
+# data/ is NOT ignored: GitHub Pages serves it from the repo.

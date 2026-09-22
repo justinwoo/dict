@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dict">
+  <rect width="512" height="512" rx="112" fill="#15171c"/>
+  <text x="50%" y="212" text-anchor="middle" font-size="176" font-weight="700"
+        font-family="Hiragino Sans, Noto Sans CJK JP, PingFang TC, sans-serif" fill="#e8825f">語</text>
+  <text x="50%" y="392" text-anchor="middle" font-size="176" font-weight="700"
+        font-family="Hiragino Sans, Noto Sans CJK TC, PingFang TC, sans-serif" fill="#79c79b">詞</text>
+</svg>

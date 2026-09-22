@@ -1,0 +1,521 @@
+:root {
+  --bg: #fbfaf8;
+  --panel: #ffffff;
+  --ink: #1c1e24;
+  --dim: #6b7280;
+  --line: #e4e2dd;
+  --accent: #b2472e;
+  --accent-soft: #f6e9e4;
+  --jp: #2f6f4f;
+  --cn: #8a4b9e;
+  --warn: #a2481f;
+  --radius: 12px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171c;
+    --panel: #1d2026;
+    --ink: #e8e6e1;
+    --dim: #949aa6;
+    --line: #2c3139;
+    --accent: #e8825f;
+    --accent-soft: #33241f;
+    --jp: #79c79b;
+    --cn: #c79ada;
+    --warn: #e39a6d;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* Fixed-height app shell: the page itself never scrolls, the list and the
+   definition each scroll in their own pane. That is what lets the list run
+   exactly to the bottom of the window instead of overshooting it or
+   shrink-wrapping its rows. Narrow screens fall back to normal page scroll. */
+html { height: 100%; }
+
+body {
+  margin: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Keep CJK legible rather than letting a latin face substitute glyphs. */
+  -webkit-text-size-adjust: 100%;
+}
+
+.jp, .cn, .ex-src {
+  font-family: "Hiragino Sans", "Noto Sans CJK JP", "Noto Sans CJK TC",
+    "Yu Gothic", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+
+/* ------------------------------------------------------------- top bar */
+
+.bar {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  padding: max(8px, env(safe-area-inset-top)) 0 8px;
+}
+
+/* Line the bar up with the results column rather than the viewport. */
+.searchrow, .controls {
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 12px;
+}
+
+/* The bordered box is a flex row holding the input and the clear button.
+   The button used to be absolutely positioned over the input, which left its
+   spacing unrelated to the input's own padding and so never looked square
+   with the text. As a flex sibling it is simply the last item in the row. */
+.searchbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.searchbox:focus-within { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+#q {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 17px; /* iOS zooms the page below 16px */
+  padding: 12px 0 12px 14px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+}
+#q:focus { outline: none; }
+#q::-webkit-search-cancel-button { display: none; }
+
+.clear {
+  flex: 0 0 auto;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--ink);
+  padding: 0; cursor: pointer;
+}
+.clear svg { display: block; }
+.clear:hover { background: var(--accent); color: #fff; }
+
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: nowrap;
+}
+
+/* Too narrow for both on one line: the tabs keep the row and the toggle drops
+   below, still right-aligned, rather than sitting on top of a clipped tab. */
+@media (max-width: 560px) {
+  .controls { flex-wrap: wrap; row-gap: 6px; }
+  .modes { width: 100%; }
+}
+
+/* One size for every control in the bar; the checkbox sets the height and the
+   tabs and buttons match it. */
+.modes button, .toggle, .iconbtn {
+  /* One explicit height, or the checkbox makes its pill 3px taller. */
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  font-size: 15px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--dim);
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.controls-right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  user-select: none;
+}
+.toggle:has(input:checked) { border-color: var(--accent); color: var(--accent); }
+.toggle input { accent-color: var(--accent); margin: 0; cursor: pointer; }
+
+.modes {
+  display: flex;
+  gap: 6px;
+  min-width: 0; /* let the row scroll instead of shoving the toggle off */
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.modes::-webkit-scrollbar { display: none; }
+
+
+.modes button[aria-selected="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- layout */
+
+main {
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#status, #loading { flex: 0 0 auto; }
+#intro { overflow-y: auto; min-height: 0; }
+#recent { min-height: 0; }
+
+.hidden { display: none !important; }
+.dim { color: var(--dim); font-size: 14px; }
+.warn { color: var(--warn); }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+#status { padding: 8px 14px; font-size: 14px; }
+
+.loadhead { font-weight: 600; margin-bottom: 8px; }
+.track {
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width .2s ease;
+}
+
+/* --------------------------------------------------- list + detail split */
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(230px, 310px) minmax(0, 1fr);
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  /* Fills the column: the grid row is the full remaining height. */
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.row {
+  padding: 8px 11px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.row:last-child { border-bottom: 0; }
+.row:hover { background: var(--accent-soft); }
+.row[aria-selected="true"] { background: var(--accent); }
+.row[aria-selected="true"] .row-word,
+.row[aria-selected="true"] .row-reading,
+.row[aria-selected="true"] .row-gloss,
+.row[aria-selected="true"] .row-tag { color: #fff; }
+
+.row-head { display: flex; align-items: baseline; gap: 7px; }
+.row-word {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: "Hiragino Sans", "Noto Sans CJK JP", "Noto Sans CJK TC",
+    "PingFang TC", system-ui, sans-serif;
+}
+.row-reading { font-size: 12px; color: var(--dim); }
+.row-tag { margin-left: auto; font-size: 10px; color: var(--dim); letter-spacing: .05em; }
+.row-tag.common { color: var(--accent); font-weight: 700; }
+.row[aria-selected="true"] .row-tag.common { color: #fff; }
+.row-gloss {
+  font-size: 13px;
+  color: var(--dim);
+  margin-top: 1px;
+  /* One line only — the detail pane is where the full text belongs. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail {
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 2px;
+}
+.detail .card { margin-bottom: 0; }
+.back { display: none; }
+
+/* Narrow: one pane at a time, with a way back to the list. */
+@media (max-width: 720px) {
+  /* Back to ordinary page scrolling: one pane at a time, full height. */
+  body { height: auto; min-height: 100dvh; overflow: visible; display: block; }
+  main { display: block; }
+  .split { grid-template-columns: 1fr; display: block; }
+  .list { height: auto; overflow: visible; }
+  .detail { height: auto; overflow: visible; display: none; }
+  body.detail-open .list { display: none; }
+  body.detail-open .detail { display: block; }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+}
+
+.recent-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.recent-head h2 { font-size: 16px; margin: 0; }
+.recent-head .btn { margin: 0 0 0 auto; }
+/* The panel is the only scroller here: the list inside it must not add a
+   second one. */
+#recent { display: flex; flex-direction: column; overflow: hidden; }
+#recent .list { flex: 1 1 auto; min-height: 0; height: auto; border: 0; border-radius: 0; }
+
+.iconbtn { font: inherit; font-size: 15px; }
+.iconbtn:hover { border-color: var(--accent); color: var(--accent); }
+.iconbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.arrow { padding: 0 15px; font-size: 17px; line-height: 1; }
+
+/* -------------------------------------------------------------- cards */
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+
+.headword { font-size: 27px; font-weight: 600; line-height: 1.25; }
+.headword.cn { color: inherit; }
+
+.reading { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.kana { font-size: 16px; color: var(--dim); }
+.romaji { font-size: 14px; color: var(--dim); font-style: italic; }
+
+.tags { display: flex; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+.tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--dim);
+}
+.tag.lang { color: var(--jp); border-color: currentColor; }
+.tag.lang.cn { color: var(--cn); }
+.tag.common { color: var(--accent); border-color: currentColor; }
+.tag.why { text-transform: none; letter-spacing: 0; }
+
+.alts { font-size: 14px; color: var(--dim); margin-top: 4px; }
+
+.senses { margin: 10px 0 0; padding-left: 20px; }
+.senses li { margin-bottom: 5px; }
+.pos {
+  display: block;
+  font-size: 12px;
+  color: var(--dim);
+  font-style: italic;
+}
+.misc { font-size: 12px; color: var(--dim); margin-left: 6px; }
+
+/* --------------------------------------------------------------- copy */
+
+.copies { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 9px; }
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--dim);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+.copy.done { border-color: var(--jp); color: var(--jp); }
+.copy.failed { border-color: var(--warn); color: var(--warn); }
+.copy-icon { font-size: 12px; }
+
+/* --------------------------------------------------- per-character popover */
+
+.han { cursor: pointer; border-radius: 3px; }
+.han:hover { background: var(--accent-soft); outline: 1px solid var(--accent); }
+
+.tip {
+  position: fixed;
+  z-index: 50;
+  max-width: 300px;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 9px 12px;
+  box-shadow: 0 6px 22px rgb(0 0 0 / .18);
+  pointer-events: none;   /* never swallows the click on the character */
+}
+.tip-head { display: flex; align-items: baseline; gap: 8px; }
+.tip-char {
+  font-size: 22px;
+  font-weight: 600;
+  font-family: "Noto Sans CJK TC", "PingFang TC", "Hiragino Sans", system-ui, sans-serif;
+}
+.tip-reading { font-size: 14px; color: var(--accent); }
+.tip-gloss { font-size: 13px; color: var(--dim); margin-top: 2px; }
+.tip-hint { font-size: 11px; color: var(--dim); margin-top: 5px; opacity: .8; }
+
+/* ----------------------------------------------------------- examples */
+
+.examples {
+  margin-top: 10px;
+  border-left: 3px solid var(--accent-soft);
+  padding-left: 10px;
+}
+.ex { margin-bottom: 7px; }
+.ex-src { font-size: 16px; }
+.ex-tr { font-size: 14px; color: var(--dim); }
+
+/* -------------------------------------------------------------- links */
+
+.links { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 9px; }
+.links-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--dim);
+  margin-bottom: 7px;
+}
+.chip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 7px 10px;
+  margin-bottom: 5px;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+.chip-head {
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: 8px;
+  font-family: "Hiragino Sans", "Noto Sans CJK TC", "PingFang TC", system-ui, sans-serif;
+}
+.chip-reading { font-size: 13px; color: var(--dim); margin-right: 8px; }
+.chip-gloss { font-size: 14px; display: block; color: var(--dim); }
+
+/* --------------------------------------------------------------- misc */
+
+#intro h2 { font-size: 16px; margin: 0 0 8px; }
+#intro ul { padding-left: 20px; margin: 0 0 10px; font-size: 14px; }
+#intro kbd {
+  background: var(--line);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
+#intro code {
+  background: var(--accent-soft);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.credits { font-size: 12px; margin-bottom: 0; }
+.credits a { color: var(--dim); }
+
+.qrbox {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.qrbox img {
+  border-radius: 8px;
+  /* The code is black on white; keep it that way in dark mode so it scans. */
+  background: #fff;
+  padding: 4px;
+}
+.qrtitle { font-weight: 600; margin-bottom: 2px; }
+
+.cachebox {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 10px;
+}
+.cacheline { font-size: 14px; margin-bottom: 4px; }
+.btn {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dict — JP · CN · EN</title>
+<meta name="description" content="Offline Japanese, Traditional Chinese and English dictionary with romaji, pinyin and example sentences.">
+<meta name="theme-color" content="#1b1d23">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="searchrow">
+    <!-- The box itself is the flex row: the input and the clear button are
+         siblings in it, so the button is placed by the layout rather than
+         floated over the input with absolute positioning. -->
+    <div class="searchbox">
+      <input id="q" type="search" autocomplete="off" autocapitalize="off" autocorrect="off"
+             spellcheck="false" enterkeyhint="search"
+             placeholder="taberu / 食べる / 你好 / nihao / eat">
+      <button id="clear" class="clear" type="button" aria-label="Clear">
+        <!-- An SVG rather than a ✕ glyph: the character sits off-centre in its
+             own em-box, so centring the box still looks crooked. -->
+        <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" focusable="false">
+          <path d="M3 3 L13 13 M13 3 L3 13" fill="none" stroke="currentColor"
+                stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="controls">
+    <nav class="modes" id="modes" role="tablist" aria-label="Results language">
+      <button role="tab" data-mode="all">All</button>
+      <button role="tab" data-mode="jp">JP ↔ EN</button>
+      <button role="tab" data-mode="cn">CN ↔ EN</button>
+      <button role="tab" data-mode="jpcn">JP ↔ CN</button>
+    </nav>
+    <div class="controls-right">
+      <button id="back" class="iconbtn arrow" type="button" title="Back" aria-label="Back">←</button>
+      <button id="fwd" class="iconbtn arrow" type="button" title="Forward" aria-label="Forward">→</button>
+      <button id="histBtn" class="iconbtn" type="button" aria-pressed="false"
+              title="Words you have looked up">History</button>
+      <label class="toggle" title="Hide archaic, obscure and unattested entries">
+        <input type="checkbox" id="minor" checked> Hide low scoring
+      </label>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div id="loading" class="panel">
+    <div class="loadhead">Loading dictionaries…</div>
+    <div class="track"><div id="barfill" class="fill"></div></div>
+    <div id="loadnote" class="dim">First run downloads about 40 MB, then it is cached for offline use.</div>
+  </div>
+
+  <div id="status" class="panel hidden"></div>
+  <!-- Master/detail: the list stays compact, the full definition lives beside
+       it. On a narrow screen only one of the two is shown at a time. -->
+  <div id="split" class="split hidden">
+    <ol id="list" class="list" aria-label="Results"></ol>
+    <div id="detail" class="detail"></div>
+  </div>
+
+  <section id="recent" class="panel hidden">
+    <div class="recent-head">
+      <h2>History</h2>
+      <button id="clearHist" class="btn" type="button">Clear</button>
+    </div>
+    <ol id="recentList" class="list"></ol>
+  </section>
+
+  <section id="intro" class="panel hidden">
+    <h2>How to search</h2>
+    <ul>
+      <li><b>Japanese</b> — kanji, kana or romaji. Inflected forms work: <code>食べました</code>, <code>tabemashita</code>.</li>
+      <li><b>Chinese</b> — traditional or simplified hanzi, or pinyin with or without tones: <code>你好</code>, <code>ni3hao3</code>, <code>nǐ hǎo</code>, <code>nihao</code>.</li>
+      <li><b>English</b> — any gloss word or phrase.</li>
+    </ul>
+    <p class="dim">Every query is matched against all three languages at once. The tabs
+      only choose which entries come back: <b>JP ↔ EN</b> gives Japanese entries with
+      English, <b>CN ↔ EN</b> gives Chinese ones, <b>JP ↔ CN</b> gives only entries that have a counterpart on the other side, and <b>All</b> gives everything. Type Chinese
+      with <b>JP ↔ EN</b> selected and you still get the Japanese side, via the pivot.
+      <kbd>Tab</kbd> steps through the tabs without leaving the box.</p>
+    <p class="dim"><b>Hide low scoring</b> drops entries that are archaic, obscure, baby-talk
+      or never attested in the example corpus, unless you typed the word exactly. Turn
+      it off to see everything.</p>
+    <p class="dim">JP↔CN pairs are derived by matching shared English glosses, so each
+      pairing shows the entry it was matched through. Treat them as suggestions, not
+      authoritative equivalents.</p>
+    <div class="qrbox">
+      <img src="qr.svg" alt="QR code linking to https://jusrin.dev/dict/" width="150" height="150">
+      <div>
+        <div class="qrtitle">Open on your phone</div>
+        <a class="dim" href="https://jusrin.dev/dict/">jusrin.dev/dict/</a>
+      </div>
+    </div>
+    <div id="cachebox" class="cachebox"></div>
+    <p class="dim credits">
+      Japanese data from <a href="https://www.edrdg.org/jmdict/j_jmdict.html">JMdict</a>
+      (EDRDG, CC BY-SA 4.0) via
+      <a href="https://github.com/scriptin/jmdict-simplified">jmdict-simplified</a>.
+      Chinese data from <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict">CC-CEDICT</a>
+      (CC BY-SA 4.0). Example sentences from
+      <a href="https://tatoeba.org/">Tatoeba</a> (CC BY 2.0 FR).
+    </p>
+  </section>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

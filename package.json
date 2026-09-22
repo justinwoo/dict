@@ -1,0 +1,23 @@
+{
+  "name": "dict",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Offline JP / \u4e2d\u6587 (TW) / EN dictionary as a static page",
+  "scripts": {
+    "fetch": "node build/fetch.mjs src",
+    "build": "node --max-old-space-size=8192 build/build.mjs src data",
+    "serve": "node build/serve.mjs 8080 .",
+    "test": "node --max-old-space-size=6144 build/test.mjs http://localhost:8099",
+    "test:browser": "node build/browser-test.mjs http://localhost:8099",
+    "test:serve": "node build/serve.mjs 8099 .",
+    "clean": "node build/clean.mjs",
+    "clean:data": "node build/clean.mjs --data",
+    "clean:all": "node build/clean.mjs --all",
+    "qr": "python3 build/qr.py \"https://jusrin.dev/dict/\" qr.svg",
+    "qr:verify": "cd build && python3 qr_verify.py"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
